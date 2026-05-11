@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1e3a1e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ヤマネコ農園">
+<title>ヤマネコファーム</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kurenaido&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root {
+  --forest:    #1e3a1e;
+  --moss:      #2d5a27;
+  --fern:      #4a7c3f;
+  --sage:      #9aba8a;
+  --mist:      #c8ddb8;
+  --paper:     #f4f0e6;
+  --cream:     #faf8f2;
+  --clay:      #8b5e3c;
+  --sand:      #c9a97a;
+  --parchment: #e8d9b8;
+  --ink:       #1a2010;
+  --sky-pale:  #ddeef5;
+  --sky-mid:   #6baac8;
+  --r-card: 20px;
+  --r-btn: 50px;
+  --sh-card: 0 2px 16px rgba(30,58,30,0.10);
+  --sh-btn: 0 4px 20px rgba(45,90,39,0.25);
+  --f-hand: 'Zen Kurenaido', cursive;
+  --f-serif: 'Noto Serif JP', serif;
+  --f-sans: 'Noto Sans JP', sans-serif;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { height:100%; -webkit-tap-highlight-color:transparent; -webkit-text-size-adjust:100%; }
+body { font-family:var(--f-sans); background:var(--paper); color:var(--ink); min-height:100%; overscroll-behavior:none; }
+
+/* ── SCREENS ── */
+.screen { display:none; position:fixed; inset:0; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; z-index:1; background:var(--paper); }
+.screen.active { display:block; }
+
+/* ===================== SETUP SCREEN ===================== */
+#screen-setup {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-height:100vh; padding:40px 24px;
+  background: radial-gradient(ellipse at 20% 80%, rgba(74,124,63,0.18) 0%, transparent 55%),
+              radial-gradient(ellipse at 80% 20%, rgba(45,90,39,0.12) 0%, transparent 55%),
+              var(--cream);
+}
+#screen-setup.active { display:flex; }
+
+.setup-emblem { font-size:64px; line-height:1; margin-bottom:8px; animation:float 4s ease-in-out infinite; filter:drop-shadow(0 4px 12px rgba(30,58,30,0.2)); }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+.setup-title { font-family:var(--f-serif); font-size:26px; font-weight:700; color:var(--forest); letter-spacing:0.1em; text-align:center; }
+.setup-sub { font-family:var(--f-hand); font-size:13px; color:var(--fern); letter-spacing:0.3em; margin-top:4px; text-align:center; }
+
+.setup-card {
+  margin-top:28px; width:100%; max-width:400px;
+  background:white; border-radius:var(--r-card); padding:24px;
+  box-shadow:var(--sh-card); border:1px solid rgba(200,221,184,0.5);
+}
+.setup-step {
+  display:flex; align-items:flex-start; gap:14px;
+  padding:14px 0; border-bottom:1px solid var(--mist);
+}
+.setup-step:last-child { border-bottom:none; padding-bottom:0; }
+.step-num {
+  width:28px; height:28px; border-radius:50%;
+  background:var(--moss); color:white;
+  font-family:var(--f-serif); font-size:14px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; margin-top:1px;
+}
+.step-body { flex:1; }
+.step-title { font-family:var(--f-serif); font-size:15px; font-weight:700; color:var(--forest); margin-bottom:4px; }
+.step-desc { font-size:12px; color:var(--clay); line-height:1.7; }
+
+.setup-input-wrap { margin-top:20px; width:100%; max-width:400px; }
+.setup-label { font-size:10px; font-weight:700; color:var(--fern); letter-spacing:0.2em; text-transform:uppercase; display:block; margin-bottom:8px; }
+.setup-input {
+  width:100%; background:white; border:2px solid var(--mist);
+  border-radius:16px; padding:16px 18px;
+  font-family:var(--f-sans); font-size:15px; color:var(--ink);
+  outline:none; transition:border-color 0.2s;
+}
+.setup-input:focus { border-color:var(--fern); }
+.setup-input::placeholder { color:var(--sand); font-size:13px; }
+
+.btn-start {
+  margin-top:16px; width:100%; max-width:400px;
+  padding:20px; background:linear-gradient(135deg,var(--moss),var(--forest));
+  color:white; border:none; border-radius:var(--r-btn);
+  font-family:var(--f-serif); font-size:18px; font-weight:700;
+  letter-spacing:0.05em; cursor:pointer;
+  box-shadow:var(--sh-btn); display:flex; align-items:center;
+  justify-content:center; gap:10px; transition:transform 0.15s;
+}
+.btn-start:active { transform:scale(0.97); }
+.btn-start:disabled { opacity:0.6; }
+
+.gas-hint {
+  margin-top:12px; width:100%; max-width:400px;
+  background:rgba(45,90,39,0.07); border-radius:14px; padding:14px 16px;
+  font-size:12px; color:var(--fern); line-height:1.7; text-align:center;
+}
+
+/* ===================== APP ===================== */
+.app-header {
+  position:sticky; top:0; z-index:50;
+  background:linear-gradient(180deg,var(--forest) 0%,var(--moss) 100%);
+  color:white; padding-top:calc(env(safe-area-inset-top) + 14px);
+}
+.hdr-inner { display:flex; align-items:center; justify-content:space-between; padding:0 18px 12px; }
+.hdr-logo { display:flex; align-items:center; gap:10px; }
+.hdr-icon { font-size:26px; }
+.hdr-title { font-family:var(--f-serif); font-size:19px; font-weight:700; letter-spacing:0.05em; }
+.hdr-sub { font-family:var(--f-hand); font-size:10px; color:var(--sage); letter-spacing:0.2em; display:block; margin-top:-2px; }
+
+.tab-bar { display:flex; border-top:1px solid rgba(255,255,255,0.1); }
+.tab-btn { flex:1; padding:10px 4px; background:none; border:none; color:rgba(255,255,255,0.45); font-family:var(--f-sans); font-size:10px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px; transition:color 0.2s; }
+.tab-btn .ti { font-size:19px; }
+.tab-btn.active { color:white; }
+.tab-btn.active .ti { filter:drop-shadow(0 0 6px rgba(154,186,138,0.9)); }
+
+.tab-content { display:none; padding:14px 14px 110px; }
+.tab-content.active { display:block; }
+
+/* ── CARDS ── */
+.card { background:white; border-radius:var(--r-card); padding:18px; margin-bottom:11px; box-shadow:var(--sh-card); border:1px solid rgba(200,221,184,0.38); }
+.card-lbl { font-size:10px; font-weight:700; color:var(--fern); letter-spacing:0.25em; text-transform:uppercase; margin-bottom:11px; display:flex; align-items:center; gap:6px; }
+.card-lbl::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,var(--mist),transparent); }
+
+/* Date */
+input[type="date"].date-inp { width:100%; font-family:var(--f-serif); font-size:24px; font-weight:700; color:var(--forest); background:none; border:none; outline:none; -webkit-appearance:none; }
+
+/* Weather */
+.wx-main { display:flex; align-items:center; gap:14px; background:linear-gradient(135deg,var(--sky-pale),#e8f5fd); border-radius:16px; padding:14px; cursor:pointer; }
+.wx-main:active { opacity:0.85; }
+.wx-big { font-size:36px; }
+.wx-label { font-family:var(--f-serif); font-size:18px; font-weight:700; color:var(--forest); }
+.wx-detail { font-size:11px; color:var(--sky-mid); margin-top:1px; }
+.wx-change { font-size:11px; color:var(--clay); margin-left:auto; }
+.wx-picker { display:none; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:9px; }
+.wx-picker.open { display:grid; }
+.wx-opt { display:flex; flex-direction:column; align-items:center; padding:11px 6px; border-radius:14px; border:2px solid var(--mist); background:white; cursor:pointer; font-size:11px; color:var(--fern); gap:3px; }
+.wx-opt .wo { font-size:22px; }
+.wx-opt.sel { border-color:var(--fern); background:rgba(74,124,63,0.08); font-weight:700; }
+
+/* Work type */
+.wt-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.wt-btn { padding:18px 8px; border-radius:18px; border:2px solid var(--mist); background:white; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:5px; transition:all 0.2s; }
+.wt-btn .wi { font-size:30px; }
+.wt-btn .wl { font-family:var(--f-serif); font-size:16px; font-weight:700; color:var(--fern); }
+.wt-btn.sel { border-color:var(--moss); background:linear-gradient(135deg,rgba(45,90,39,0.09),rgba(74,124,63,0.04)); box-shadow:0 4px 16px rgba(45,90,39,0.14); }
+.wt-btn.sel .wl { color:var(--forest); }
+
+/* Variety */
+.var-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.var-btn { display:flex; flex-direction:column; align-items:center; padding:13px 5px; border-radius:16px; border:2px solid var(--mist); background:white; cursor:pointer; transition:all 0.15s; gap:3px; }
+.var-btn .ve { font-size:24px; }
+.var-btn .vn { font-size:11px; font-weight:700; color:var(--fern); text-align:center; line-height:1.2; }
+.var-btn.sel { border-color:var(--moss); background:linear-gradient(135deg,rgba(45,90,39,0.12),rgba(74,124,63,0.05)); transform:scale(1.04); box-shadow:0 4px 14px rgba(45,90,39,0.18); }
+.var-btn.sel .vn { color:var(--forest); }
+
+/* Qty */
+.qty-row { display:flex; align-items:center; gap:11px; }
+.qty-btn { width:58px; height:58px; border-radius:50%; border:none; font-size:26px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; }
+.qty-minus { background:var(--parchment); color:var(--clay); }
+.qty-minus:active { background:var(--sand); }
+.qty-plus { background:linear-gradient(135deg,var(--moss),var(--forest)); color:white; box-shadow:0 4px 14px rgba(45,90,39,0.3); }
+.qty-plus:active { transform:scale(0.93); }
+.qty-center { flex:1; text-align:center; }
+input.qty-inp { width:100%; text-align:center; font-family:var(--f-serif); font-size:40px; font-weight:700; color:var(--forest); background:none; border:none; outline:none; -webkit-appearance:none; }
+input.qty-inp::-webkit-inner-spin-button, input.qty-inp::-webkit-outer-spin-button { -webkit-appearance:none; }
+.qty-unit { font-size:12px; color:var(--clay); margin-top:1px; }
+
+/* Photo */
+.photo-area { border:2px dashed var(--mist); border-radius:18px; padding:26px; text-align:center; cursor:pointer; background:rgba(248,245,240,0.5); }
+.photo-area:active { border-color:var(--fern); }
+.photo-area-icon { font-size:36px; margin-bottom:7px; }
+.photo-area-text { font-size:12px; color:var(--clay); line-height:1.6; }
+.photo-prev-wrap { position:relative; }
+.photo-prev { width:100%; border-radius:14px; object-fit:cover; max-height:200px; }
+.photo-clear { position:absolute; top:8px; right:8px; width:30px; height:30px; background:rgba(0,0,0,0.55); border:none; border-radius:50%; color:white; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+/* Memo */
+textarea.memo-inp { width:100%; background:rgba(248,245,240,0.7); border:1.5px solid var(--mist); border-radius:14px; padding:14px; font-family:var(--f-hand); font-size:16px; color:var(--ink); resize:none; outline:none; line-height:1.7; }
+textarea.memo-inp:focus { border-color:var(--fern); }
+textarea.memo-inp::placeholder { color:var(--sand); }
+
+/* Save bar */
+.save-bar { position:fixed; bottom:0; left:0; right:0; z-index:60; padding:11px 14px; padding-bottom:calc(11px + env(safe-area-inset-bottom)); background:linear-gradient(0deg,rgba(244,240,230,0.98) 72%,transparent); backdrop-filter:blur(8px); }
+.btn-save { width:100%; padding:20px; background:linear-gradient(135deg,var(--fern),var(--forest)); color:white; border:none; border-radius:var(--r-btn); font-family:var(--f-serif); font-size:18px; font-weight:700; letter-spacing:0.05em; cursor:pointer; box-shadow:0 6px 24px rgba(30,58,30,0.35); display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s; }
+.btn-save:active { transform:scale(0.97); }
+.btn-save:disabled { opacity:0.55; }
+.btn-save.ok { background:linear-gradient(135deg,#2d9f5a,#1a6e3a); }
+
+/* History */
+.hi { display:flex; gap:13px; align-items:flex-start; background:white; border-radius:18px; padding:15px 17px; margin-bottom:9px; box-shadow:0 1px 10px rgba(30,58,30,0.08); border:1px solid rgba(200,221,184,0.33); }
+.hi-left { flex-shrink:0; text-align:center; min-width:44px; }
+.hi-emoji { font-size:30px; }
+.hi-wt { font-size:9px; font-weight:700; letter-spacing:0.08em; margin-top:4px; padding:3px 7px; border-radius:50px; }
+.hi-wt.p { background:rgba(74,124,63,0.12); color:var(--fern); }
+.hi-wt.h { background:rgba(140,94,60,0.12); color:var(--clay); }
+.hi-right { flex:1; min-width:0; }
+.hi-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:3px; }
+.hi-variety { font-family:var(--f-serif); font-size:17px; font-weight:700; color:var(--forest); }
+.hi-date { font-size:11px; color:var(--clay); }
+.hi-qty { font-size:19px; font-weight:700; font-family:var(--f-serif); color:var(--moss); }
+.hi-meta { display:flex; align-items:center; gap:7px; margin-top:5px; }
+.hi-wx { font-size:15px; }
+.hi-memo { font-size:12px; color:var(--clay); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px; }
+
+/* Master */
+.vli { display:flex; align-items:center; gap:13px; padding:15px 18px; background:white; border-radius:16px; margin-bottom:7px; box-shadow:0 1px 8px rgba(30,58,30,0.07); border:1px solid rgba(200,221,184,0.33); }
+.vli-emoji { font-size:27px; }
+.vli-info { flex:1; }
+.vli-name { font-family:var(--f-serif); font-size:17px; font-weight:700; color:var(--forest); }
+.vli-unit { font-size:11px; color:var(--clay); margin-top:1px; }
+.btn-del { background:none; border:none; color:#e05555; font-size:20px; cursor:pointer; padding:4px 8px; border-radius:8px; }
+.btn-del:active { background:rgba(224,85,85,0.1); }
+
+.add-form { background:white; border-radius:var(--r-card); padding:20px; margin-top:7px; box-shadow:var(--sh-card); border:1px solid rgba(200,221,184,0.4); }
+.emoji-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:13px; }
+.ep-btn { aspect-ratio:1; border:none; background:none; font-size:21px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.ep-btn.sel { background:rgba(74,124,63,0.15); }
+.unit-row { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:15px; }
+.unit-btn { padding:10px 17px; border-radius:50px; border:2px solid var(--mist); background:white; font-size:14px; color:var(--fern); cursor:pointer; }
+.unit-btn.sel { border-color:var(--moss); background:rgba(45,90,39,0.1); color:var(--forest); font-weight:700; }
+
+.btn-add-var { width:100%; padding:17px; background:linear-gradient(135deg,var(--moss),var(--forest)); color:white; border:none; border-radius:var(--r-btn); font-family:var(--f-serif); font-size:17px; font-weight:700; cursor:pointer; box-shadow:var(--sh-btn); }
+.btn-add-var:active { transform:scale(0.97); }
+.btn-add-var:disabled { opacity:0.5; }
+.btn-show-add { width:100%; padding:17px; border:2px dashed var(--sage); border-radius:var(--r-card); background:none; color:var(--fern); font-family:var(--f-serif); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:4px; }
+.btn-show-add:active { background:rgba(74,124,63,0.07); }
+
+/* Settings */
+.s-sec { font-size:10px; font-weight:700; color:var(--clay); letter-spacing:0.25em; text-transform:uppercase; margin:20px 0 7px; }
+.s-row { background:white; border-radius:14px; padding:15px 17px; margin-bottom:4px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; border:1px solid rgba(200,221,184,0.3); }
+.s-row:active { background:var(--cream); }
+.s-label { font-size:15px; color:var(--ink); }
+.s-val { font-size:12px; color:var(--clay); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Toast */
+.toast { position:fixed; bottom:calc(90px + env(safe-area-inset-bottom)); left:14px; right:14px; z-index:200; background:var(--forest); color:white; border-radius:16px; padding:15px 18px; font-family:var(--f-serif); font-size:14px; text-align:center; box-shadow:0 8px 30px rgba(0,0,0,0.25); opacity:0; transform:translateY(14px); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; }
+.toast.show { opacity:1; transform:translateY(0); }
+.toast.err { background:#8b1a1a; }
+.toast.ok { background:#1e5e30; }
+
+/* Misc */
+.spinner { display:inline-block; width:18px; height:18px; border:2.5px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.hidden { display:none !important; }
+.loading-txt { text-align:center; color:var(--clay); padding:28px; font-size:13px; }
+.empty-st { text-align:center; padding:44px 18px; color:var(--clay); }
+.empty-st-icon { font-size:44px; margin-bottom:10px; }
+.empty-st-txt { font-size:13px; line-height:1.7; }
+
+.form-input { width:100%; background:white; border:1.5px solid var(--mist); border-radius:14px; padding:14px 16px; font-family:var(--f-sans); font-size:15px; color:var(--ink); outline:none; transition:border-color 0.2s; }
+.form-input:focus { border-color:var(--fern); }
+.form-label { display:block; font-size:10px; font-weight:700; color:var(--fern); letter-spacing:0.2em; text-transform:uppercase; margin-bottom:8px; }
+</style>
+</head>
+<body>
+
+<!-- ===================== SETUP ===================== -->
+<div id="screen-setup" class="screen active">
+  <div class="setup-emblem">🐱</div>
+  <h1 class="setup-title">ヤマネコファーム</h1>
+  <p class="setup-sub">初回設定</p>
+
+  <div class="setup-card">
+    <div class="setup-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">スプレッドシートを作成</div>
+        <div class="step-desc">Googleスプレッドシートを新規作成して、URLの中の長いIDをコピー</div>
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">GASを貼り付ける</div>
+        <div class="step-desc">「拡張機能」→「Apps Script」を開いて、下のコードを貼り付けてデプロイ</div>
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">URLを入力してスタート</div>
+        <div class="step-desc">デプロイ後に表示されるウェブアプリURLを下に入力</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="setup-input-wrap">
+    <label class="setup-label">GAS ウェブアプリURL</label>
+    <input class="setup-input" id="gas-url-input" type="url"
+      placeholder="https://script.google.com/macros/s/…/exec">
+  </div>
+
+  <div class="gas-hint">
+    💡 GASのコードは「設定」タブからいつでもコピーできます
+  </div>
+
+  <button class="btn-start" onclick="startApp()">
+    <span>🌱</span> はじめる
+  </button>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="screen-app" class="screen">
+  <header class="app-header">
+    <div class="hdr-inner">
+      <div class="hdr-logo">
+        <span class="hdr-icon">🐱</span>
+        <div>
+          <span class="hdr-title">ヤマネコファーム</span>
+          <span class="hdr-sub">YAMANEKO FARM</span>
+        </div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('record')" id="tab-record"><span class="ti">✏️</span>記録</button>
+      <button class="tab-btn" onclick="switchTab('history')" id="tab-history"><span class="ti">📋</span>一覧</button>
+      <button class="tab-btn" onclick="switchTab('master')" id="tab-master"><span class="ti">🌱</span>品種</button>
+      <button class="tab-btn" onclick="switchTab('settings')" id="tab-settings"><span class="ti">⚙️</span>設定</button>
+    </div>
+  </header>
+
+  <!-- TAB: 記録 -->
+  <div class="tab-content active" id="tc-record">
+    <div class="card">
+      <div class="card-lbl">📅 日付</div>
+      <input type="date" class="date-inp" id="inp-date">
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">🌤 天候</div>
+      <div class="wx-main" onclick="toggleWx()">
+        <span class="wx-big" id="wx-icon">☀️</span>
+        <div>
+          <div class="wx-label" id="wx-label">晴れ</div>
+          <div class="wx-detail" id="wx-detail"></div>
+        </div>
+        <span class="wx-change">変更 ›</span>
+      </div>
+      <div class="wx-picker" id="wx-picker">
+        <button class="wx-opt sel" data-l="晴れ" data-i="☀️" onclick="pickWx(this)"><span class="wo">☀️</span>晴れ</button>
+        <button class="wx-opt" data-l="曇り" data-i="☁️" onclick="pickWx(this)"><span class="wo">☁️</span>曇り</button>
+        <button class="wx-opt" data-l="小雨" data-i="🌦️" onclick="pickWx(this)"><span class="wo">🌦️</span>小雨</button>
+        <button class="wx-opt" data-l="雨" data-i="🌧️" onclick="pickWx(this)"><span class="wo">🌧️</span>雨</button>
+        <button class="wx-opt" data-l="雷雨" data-i="⛈️" onclick="pickWx(this)"><span class="wo">⛈️</span>雷雨</button>
+        <button class="wx-opt" data-l="雪" data-i="❄️" onclick="pickWx(this)"><span class="wo">❄️</span>雪</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">🔧 作業区分</div>
+      <div class="wt-grid">
+        <button class="wt-btn sel" id="wt-p" onclick="pickWork('作付け')"><span class="wi">🌱</span><span class="wl">作付け</span></button>
+        <button class="wt-btn" id="wt-h" onclick="pickWork('収穫')"><span class="wi">🧺</span><span class="wl">収穫</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">🥬 品種</div>
+      <div class="var-grid" id="var-grid"><div class="loading-txt">読み込み中...</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl" id="qty-lbl">📦 数量</div>
+      <div class="qty-row">
+        <button class="qty-btn qty-minus" onclick="chgQty(-1)">−</button>
+        <div class="qty-center">
+          <input class="qty-inp" id="inp-qty" type="number" value="0" inputmode="decimal">
+          <div class="qty-unit" id="qty-unit">—</div>
+        </div>
+        <button class="qty-btn qty-plus" onclick="chgQty(1)">＋</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">📷 写真</div>
+      <input type="file" id="photo-inp" accept="image/*" capture="environment" style="display:none" onchange="onPhoto(this)">
+      <div id="pa-empty" class="photo-area" onclick="document.getElementById('photo-inp').click()">
+        <div class="photo-area-icon">📷</div>
+        <div class="photo-area-text">タップして撮影<br>またはライブラリから選択</div>
+      </div>
+      <div id="pa-prev" class="hidden photo-prev-wrap">
+        <img id="photo-img" class="photo-prev" src="" alt="">
+        <button class="photo-clear" onclick="clearPhoto()">✕</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-lbl">📝 メモ（任意）</div>
+      <textarea class="memo-inp" id="inp-memo" rows="3" placeholder="気になったことを..."></textarea>
+    </div>
+    <div style="height:14px;"></div>
+  </div>
+
+  <!-- TAB: 一覧 -->
+  <div class="tab-content" id="tc-history">
+    <div id="history-list"><div class="loading-txt">読み込み中...</div></div>
+  </div>
+
+  <!-- TAB: 品種 -->
+  <div class="tab-content" id="tc-master">
+    <div id="master-list"></div>
+    <div id="add-form" class="hidden add-form">
+      <div class="card-lbl" style="margin-bottom:11px;">✨ 新しい品種</div>
+      <div class="form-label">絵文字</div>
+      <div class="emoji-grid" id="emoji-grid"></div>
+      <div style="margin-bottom:14px;">
+        <label class="form-label">品種名</label>
+        <input class="form-input" id="new-name" type="text" placeholder="例: レタス">
+      </div>
+      <div class="form-label">単位</div>
+      <div class="unit-row" id="unit-row"></div>
+      <div style="display:flex;gap:9px;margin-top:4px;">
+        <button onclick="hideAdd()" style="flex:1;padding:15px;border:2px solid var(--mist);border-radius:50px;background:none;color:var(--fern);font-size:15px;cursor:pointer;">キャンセル</button>
+        <button class="btn-add-var" style="flex:2;" onclick="submitAdd()">追加する</button>
+      </div>
+    </div>
+    <button class="btn-show-add" id="btn-show-add" onclick="showAdd()"><span style="font-size:18px;">＋</span> 品種を追加</button>
+  </div>
+
+  <!-- TAB: 設定 -->
+  <div class="tab-content" id="tc-settings">
+    <div class="s-sec">接続設定</div>
+    <div class="s-row" onclick="editGasUrl()">
+      <span class="s-label">GAS URL</span>
+      <span class="s-val" id="d-gas-url">未設定</span>
+    </div>
+
+    <div class="s-sec">GAS コード（スプレッドシートに貼り付ける）</div>
+    <div class="card" style="margin-top:0;">
+      <p style="font-size:12px;color:var(--clay);margin-bottom:12px;line-height:1.7;">
+        Googleスプレッドシートの「拡張機能」→「Apps Script」を開いて、以下のコードを全選択して貼り付け、「デプロイ」してください。
+      </p>
+      <button onclick="copyGasCode()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--moss),var(--forest));color:white;border:none;border-radius:14px;font-family:var(--f-serif);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;">
+        📋 GASコードをコピー
+      </button>
+      <pre id="gas-code-preview" style="background:var(--paper);border-radius:12px;padding:14px;font-size:10px;color:var(--clay);overflow-x:auto;line-height:1.6;white-space:pre-wrap;word-break:break-all;max-height:160px;overflow-y:auto;"></pre>
+    </div>
+
+    <div class="s-sec">データ</div>
+    <div class="s-row" onclick="exportCSV()">
+      <span class="s-label">CSVでエクスポート</span>
+      <span>›</span>
+    </div>
+  </div>
+
+  <!-- 保存ボタン -->
+  <div class="save-bar" id="save-bar">
+    <button class="btn-save" id="btn-save" onclick="saveRecord()">記録を保存する</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================
+// GAS CODE (スプレッドシートに貼り付けるコード)
+// =====================================================
+const GAS_CODE = `// ヤマネコファーム - Google Apps Script
+// このコードをスプレッドシートのApps Scriptに貼り付けてください
+
+const SHEET_RECORDS   = 'Records';
+const SHEET_VARIETIES = 'Varieties';
+
+function doGet(e) {
+  return handleRequest(e);
+}
+
+function doPost(e) {
+  return handleRequest(e);
+}
+
+function handleRequest(e) {
+  const params = e.parameter;
+  const action = params.action;
+  let result;
+
+  try {
+    if (action === 'getVarieties')    result = getVarieties();
+    else if (action === 'addVariety') result = addVariety(params);
+    else if (action === 'delVariety') result = delVariety(params.id);
+    else if (action === 'addRecord')  result = addRecord(params);
+    else if (action === 'getRecords') result = getRecords();
+    else result = { error: 'Unknown action' };
+  } catch(err) {
+    result = { error: err.message };
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getSheet(name) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    if (name === SHEET_RECORDS) {
+      sheet.appendRow(['ID','日付','天候','天候アイコン','作業区分','品種','数量','単位','写真(Base64)','メモ','登録日時']);
+    } else if (name === SHEET_VARIETIES) {
+      sheet.appendRow(['ID','品種名','単位','絵文字']);
+      // デフォルト品種
+      sheet.appendRow(['v1','レタス','玉','🥬']);
+      sheet.appendRow(['v2','ピーナッツ','kg','🥜']);
+      sheet.appendRow(['v3','わさび','kg','🌿']);
+      sheet.appendRow(['v4','トマト','kg','🍅']);
+      sheet.appendRow(['v5','きゅうり','本','🥒']);
+    }
+  }
+  return sheet;
+}
+
+function getVarieties() {
+  const sheet = getSheet(SHEET_VARIETIES);
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return { varieties: [] };
+  return {
+    varieties: data.slice(1).map(r => ({
+      id: r[0], name: r[1], unit: r[2], emoji: r[3]
+    }))
+  };
+}
+
+function addVariety(p) {
+  const sheet = getSheet(SHEET_VARIETIES);
+  const id = 'v_' + Date.now();
+  sheet.appendRow([id, p.name, p.unit, p.emoji]);
+  return { ok: true, id };
+}
+
+function delVariety(id) {
+  const sheet = getSheet(SHEET_VARIETIES);
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === id) {
+      sheet.deleteRow(i + 1);
+      return { ok: true };
+    }
+  }
+  return { error: 'not found' };
+}
+
+function addRecord(p) {
+  const sheet = getSheet(SHEET_RECORDS);
+  const id = 'r_' + Date.now();
+  sheet.appendRow([
+    id, p.date, p.weather, p.wxIcon, p.work,
+    p.variety, p.qty, p.unit, p.photoData || '', p.memo,
+    new Date().toISOString()
+  ]);
+  return { ok: true, id };
+}
+
+function getRecords() {
+  const sheet = getSheet(SHEET_RECORDS);
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return { records: [] };
+  return {
+    records: data.slice(1).reverse().map(r => ({
+      id: r[0], date: r[1], weather: r[2], wxIcon: r[3],
+      work: r[4], variety: r[5], qty: r[6], unit: r[7],
+      memo: r[9]
+    }))
+  };
+}`;
+
+// =====================================================
+// STATE
+// =====================================================
+const S = {
+  gasUrl: '',
+  varieties: [],
+  records: [],
+  form: { weather:'晴れ', wxIcon:'☀️', work:'作付け', varId:null, photo:null },
+  addEm: '🌱', addUnit: 'kg',
+};
+
+const EMOJIS = ['🌱','🥬','🥜','🌿','🍅','🥒','🌽','🍆','🫑','🧅','🧄','🥔','🍠','🥕','🌾','🍋','🍊','🍓','🍇','🫛','🌸','🌼'];
+const UNITS  = ['kg','g','玉','本','袋','束','個'];
+
+// =====================================================
+// INIT
+// =====================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // GASコードをプレビューに表示
+  document.getElementById('gas-code-preview').textContent = GAS_CODE;
+
+  // 保存済みURLを確認
+  const saved = localStorage.getItem('ynk_gas_url');
+  if (saved) {
+    S.gasUrl = saved;
+    showApp();
+  }
+
+  initDate();
+  buildEmojiGrid();
+  buildUnitRow();
+});
+
+function initDate() {
+  const d = new Date();
+  const s = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  document.getElementById('inp-date').value = s;
+}
+
+// =====================================================
+// SETUP
+// =====================================================
+function startApp() {
+  const url = document.getElementById('gas-url-input').value.trim();
+  if (!url || !url.startsWith('https://script.google.com')) {
+    toast('GASのURLを入力してください','err');
+    return;
+  }
+  S.gasUrl = url;
+  localStorage.setItem('ynk_gas_url', url);
+  showApp();
+}
+
+function showApp() {
+  document.getElementById('screen-setup').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  refreshSettingsDisplay();
+  loadVarieties();
+}
+
+// =====================================================
+// GAS API
+// =====================================================
+async function gasCall(params) {
+  if (!S.gasUrl) throw new Error('GAS URLが未設定です');
+  const url = new URL(S.gasUrl);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error('通信エラー: ' + res.status);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+// =====================================================
+// TABS
+// =====================================================
+function switchTab(t) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  document.getElementById('tc-'+t).classList.add('active');
+  document.getElementById('save-bar').style.display = (t==='record') ? '' : 'none';
+  if (t==='history') renderHistory();
+}
+
+// =====================================================
+// WEATHER
+// =====================================================
+function toggleWx() { document.getElementById('wx-picker').classList.toggle('open'); }
+function pickWx(el) {
+  S.form.weather=el.dataset.l; S.form.wxIcon=el.dataset.i;
+  document.getElementById('wx-label').textContent=el.dataset.l;
+  document.getElementById('wx-icon').textContent=el.dataset.i;
+  document.querySelectorAll('.wx-opt').forEach(b=>b.classList.toggle('sel',b===el));
+  document.getElementById('wx-picker').classList.remove('open');
+}
+
+// =====================================================
+// WORK TYPE
+// =====================================================
+function pickWork(t) {
+  S.form.work=t;
+  document.getElementById('wt-p').classList.toggle('sel',t==='作付け');
+  document.getElementById('wt-h').classList.toggle('sel',t==='収穫');
+}
+
+// =====================================================
+// VARIETIES
+// =====================================================
+async function loadVarieties() {
+  try {
+    const d = await gasCall({action:'getVarieties'});
+    S.varieties = d.varieties || [];
+  } catch(e) {
+    S.varieties = [];
+  }
+  renderVarGrid();
+  renderMasterList();
+}
+
+function renderVarGrid() {
+  const g = document.getElementById('var-grid');
+  if (!S.varieties.length) {
+    g.innerHTML='<p style="color:var(--clay);font-size:13px;grid-column:1/-1;">品種がありません。「品種」タブから追加してください。</p>';
+    return;
+  }
+  g.innerHTML = S.varieties.map(v=>`
+    <button class="var-btn ${S.form.varId===v.id?'sel':''}" onclick="pickVar('${v.id}')">
+      <span class="ve">${v.emoji}</span>
+      <span class="vn">${v.name}</span>
+    </button>`).join('');
+}
+
+function pickVar(id) {
+  S.form.varId=id;
+  const v=S.varieties.find(x=>x.id===id);
+  document.getElementById('qty-unit').textContent=v?.unit||'';
+  document.getElementById('qty-lbl').textContent=`📦 数量 (${v?.unit||''})`;
+  renderVarGrid();
+}
+
+// =====================================================
+// QUANTITY
+// =====================================================
+function chgQty(d) {
+  const el=document.getElementById('inp-qty');
+  const n=Math.max(0,(parseFloat(el.value)||0)+d);
+  el.value=Number.isInteger(n)?n:n.toFixed(1);
+}
+
+// =====================================================
+// PHOTO (Base64変換)
+// =====================================================
+function onPhoto(inp) {
+  const f=inp.files[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    S.form.photo=e.target.result; // base64
+    document.getElementById('photo-img').src=e.target.result;
+    document.getElementById('pa-empty').classList.add('hidden');
+    document.getElementById('pa-prev').classList.remove('hidden');
+  };
+  reader.readAsDataURL(f);
+}
+function clearPhoto() {
+  S.form.photo=null; document.getElementById('photo-inp').value='';
+  document.getElementById('pa-empty').classList.remove('hidden');
+  document.getElementById('pa-prev').classList.add('hidden');
+}
+
+// =====================================================
+// SAVE RECORD
+// =====================================================
+async function saveRecord() {
+  if (!S.form.varId) { toast('品種を選択してください','err'); return; }
+  const qty=parseFloat(document.getElementById('inp-qty').value);
+  if (!qty||qty<=0) { toast('数量を入力してください','err'); return; }
+
+  const btn=document.getElementById('btn-save');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> 保存中...';
+
+  try {
+    const v=S.varieties.find(x=>x.id===S.form.varId);
+    const params = {
+      action:'addRecord',
+      date: document.getElementById('inp-date').value,
+      weather: S.form.weather,
+      wxIcon: S.form.wxIcon,
+      work: S.form.work,
+      variety: v?.name||'',
+      qty: String(qty),
+      unit: v?.unit||'',
+      photoData: S.form.photo || '',
+      memo: document.getElementById('inp-memo').value,
+    };
+    await gasCall(params);
+
+    btn.classList.add('ok'); btn.innerHTML='✓ 保存しました！';
+    setTimeout(()=>{ btn.classList.remove('ok'); btn.innerHTML='記録を保存する'; btn.disabled=false; }, 2200);
+
+    // reset
+    S.form.varId=null;
+    document.getElementById('inp-qty').value='0';
+    document.getElementById('qty-unit').textContent='—';
+    document.getElementById('qty-lbl').textContent='📦 数量';
+    document.getElementById('inp-memo').value='';
+    clearPhoto();
+    renderVarGrid();
+  } catch(e) {
+    toast('保存失敗: '+e.message,'err');
+    btn.disabled=false; btn.innerHTML='記録を保存する';
+  }
+}
+
+// =====================================================
+// HISTORY
+// =====================================================
+async function renderHistory() {
+  const list=document.getElementById('history-list');
+  list.innerHTML='<div class="loading-txt">読み込み中...</div>';
+  try {
+    const d=await gasCall({action:'getRecords'});
+    S.records=d.records||[];
+  } catch(e) { S.records=[]; }
+
+  if (!S.records.length) {
+    list.innerHTML='<div class="empty-st"><div class="empty-st-icon">📋</div><div class="empty-st-txt">まだ記録がありません</div></div>';
+    return;
+  }
+  list.innerHTML=S.records.map(r=>{
+    const v=S.varieties.find(x=>x.name===r.variety);
+    return `<div class="hi">
+      <div class="hi-left"><div class="hi-emoji">${v?.emoji||'🌱'}</div><div class="hi-wt ${r.work==='作付け'?'p':'h'}">${r.work}</div></div>
+      <div class="hi-right">
+        <div class="hi-top"><span class="hi-variety">${r.variety}</span><span class="hi-date">${r.date}</span></div>
+        <div class="hi-qty">${r.qty} ${r.unit}</div>
+        <div class="hi-meta"><span class="hi-wx">${r.wxIcon||'🌤️'}</span>${r.memo?`<span class="hi-memo">${r.memo}</span>`:''}</div>
+      </div></div>`;
+  }).join('');
+}
+
+// =====================================================
+// MASTER
+// =====================================================
+function renderMasterList() {
+  const el=document.getElementById('master-list');
+  if (!S.varieties.length) {
+    el.innerHTML='<div class="empty-st"><div class="empty-st-icon">🌱</div><div class="empty-st-txt">品種がありません</div></div>';
+    return;
+  }
+  el.innerHTML=S.varieties.map(v=>`
+    <div class="vli">
+      <span class="vli-emoji">${v.emoji}</span>
+      <div class="vli-info"><div class="vli-name">${v.name}</div><div class="vli-unit">${v.unit}</div></div>
+      <button class="btn-del" onclick="delVar('${v.id}')">🗑</button>
+    </div>`).join('');
+}
+
+async function delVar(id) {
+  if (!confirm('この品種を削除しますか？')) return;
+  try {
+    await gasCall({action:'delVariety',id});
+    S.varieties=S.varieties.filter(v=>v.id!==id);
+    renderMasterList(); renderVarGrid();
+    toast('削除しました','ok');
+  } catch(e) { toast('削除失敗','err'); }
+}
+
+function showAdd() {
+  document.getElementById('add-form').classList.remove('hidden');
+  document.getElementById('btn-show-add').classList.add('hidden');
+  document.getElementById('new-name').value='';
+}
+function hideAdd() {
+  document.getElementById('add-form').classList.add('hidden');
+  document.getElementById('btn-show-add').classList.remove('hidden');
+}
+
+async function submitAdd() {
+  const name=document.getElementById('new-name').value.trim();
+  if (!name) { toast('品種名を入力してください','err'); return; }
+  try {
+    const d=await gasCall({action:'addVariety',name,unit:S.addUnit,emoji:S.addEm});
+    S.varieties.push({id:d.id,name,unit:S.addUnit,emoji:S.addEm});
+    renderMasterList(); renderVarGrid();
+    hideAdd();
+    toast(`「${name}」を追加しました`,'ok');
+  } catch(e) { toast('追加失敗: '+e.message,'err'); }
+}
+
+function buildEmojiGrid() {
+  document.getElementById('emoji-grid').innerHTML=EMOJIS.map(e=>`
+    <button class="ep-btn ${e===S.addEm?'sel':''}" onclick="pickEm('${e}',this)">${e}</button>`).join('');
+}
+function pickEm(e,el) { S.addEm=e; document.querySelectorAll('.ep-btn').forEach(b=>b.classList.remove('sel')); el.classList.add('sel'); }
+
+function buildUnitRow() {
+  document.getElementById('unit-row').innerHTML=UNITS.map(u=>`
+    <button class="unit-btn ${u===S.addUnit?'sel':''}" onclick="pickUnit('${u}',this)">${u}</button>`).join('');
+}
+function pickUnit(u,el) { S.addUnit=u; document.querySelectorAll('.unit-btn').forEach(b=>b.classList.remove('sel')); el.classList.add('sel'); }
+
+// =====================================================
+// SETTINGS
+// =====================================================
+function refreshSettingsDisplay() {
+  const el=document.getElementById('d-gas-url');
+  el.textContent=S.gasUrl ? S.gasUrl.substring(0,30)+'…' : '未設定';
+}
+
+function editGasUrl() {
+  const val=prompt('GAS URLを入力してください:', S.gasUrl||'');
+  if (!val) return;
+  S.gasUrl=val.trim();
+  localStorage.setItem('ynk_gas_url',S.gasUrl);
+  refreshSettingsDisplay();
+  toast('URLを更新しました','ok');
+  loadVarieties();
+}
+
+function copyGasCode() {
+  navigator.clipboard?.writeText(GAS_CODE).then(()=>{
+    toast('コードをコピーしました！','ok');
+  }).catch(()=>{
+    // fallback
+    const ta=document.createElement('textarea');
+    ta.value=GAS_CODE; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    toast('コードをコピーしました！','ok');
+  });
+}
+
+function exportCSV() {
+  if (!S.records.length) { toast('記録がありません','err'); return; }
+  const header='日付,天候,作業区分,品種,数量,単位,メモ';
+  const rows=S.records.map(r=>`${r.date},${r.weather},${r.work},${r.variety},${r.qty},${r.unit},"${r.memo||''}"`);
+  const csv='\uFEFF'+header+'\n'+rows.join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`yamaneko_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('CSVをダウンロードしました','ok');
+}
+
+// =====================================================
+// TOAST
+// =====================================================
+let toastTmr=null;
+function toast(msg,type='ok') {
+  const el=document.getElementById('toast');
+  el.textContent=(type==='ok'?'✓ ':'⚠ ')+msg;
+  el.className='toast show '+type;
+  clearTimeout(toastTmr);
+  toastTmr=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+document.addEventListener('touchstart',e=>{
+  if (!e.target.closest('input,textarea,select')) document.activeElement?.blur();
+},{passive:true});
+</script>
+</body>
+</html>
